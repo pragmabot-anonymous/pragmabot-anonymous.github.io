@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="A robot task-planning framework that learns through real-world experience using VLM-based self-reflection, short-term and long-term memory.">
+  <meta name="keywords" content="Robot memory, vision-language models, task planning, learning from experience, self-reflection, RAG">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Pragmatist Robot</title>
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="A Pragmatist Robot">
+  <meta property="og:description" content="A framework enabling robots to learn task planning through real-world experience using VLM-based self-reflection and memory.">
+  <meta property="og:image" content="./static/images/pipeline.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="A Pragmatist Robot">
+  <meta name="twitter:description" content="Robots learning task planning through real-world experience with VLM self-reflection and memory.">
+  <meta name="twitter:image" content="./static/images/pipeline.png">
+
+  <!-- MathJax -->
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/robot_avatar.png">
+
+  <!-- Scripts -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/bulma-carousel.min.js"></script>
+  <script defer src="./static/js/bulma-slider.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script defer src="./static/js/rag-ablation-chart.js"></script>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div class="navbar-menu">
+      <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+        <a class="navbar-item" href="#">
+          <span class="icon"><i class="fas fa-home"></i></span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== Hero ==================== -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">A Pragmatist Robot</h1>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Anonymous Authors</span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Anonymous Institution</span>
+            </div>
+
+            <br>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block is-italic">Anonymous submission</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Teaser Video ==================== -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <video id="teaser" autoplay muted loop playsinline height="100%">
+          <source src="./static/videos/teaser.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <h2 class="subtitle has-text-centered">
+          Robot completes a new task guided by a long-term memory of self-reflective experiences.
+        </h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Video Demos ==================== -->
+  <section class="hero is-light is-small">
+    <div class="hero-body">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered">Video Demonstrations</h2>
+        <h3 class="title is-5 has-text-centered mt-4">With Short-Term Memory: Self-Reflection in Action</h3>
+
+        <div id="results-carousel-stm" class="carousel results-carousel">
+          <div class="item item-stm-apple">
+            <video poster="" id="stm-apple" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/stm_move_apple.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">The robot pushes away an obstructing container before grasping the apple after initial failure.</p>
+          </div>
+          <div class="item item-stm-egg">
+            <video poster="" id="stm-egg" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/stm_move_egg.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">After cracking an egg while grasping, the robot learns to push fragile objects instead.</p>
+          </div>
+          <div class="item item-stm-candy">
+            <video poster="" id="stm-candy" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/stm_push_candy.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">The robot autonomously uses a sponge as a tool to push a tiny candy after a failed push attempt.</p>
+          </div>
+          <div class="item item-stm-plate">
+            <video poster="" id="stm-plate" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/stm_pick_plate.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">The robot learns to remove the apple from the bowl before picking it up.</p>
+          </div>
+        </div>
+        <h3 class="title is-5 has-text-centered mt-5">With Long-Term Memory: Planning Correctly on the First Attempt</h3>
+
+        <div id="results-carousel-ltm" class="carousel results-carousel">
+          <div class="item item-ltm-orange">
+            <video poster="" id="ltm-orange" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_put_orange_on_plate.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Recalls to clear obstructions before placing the orange on the plate.</p>
+          </div>
+          <div class="item item-ltm-sushi">
+            <video poster="" id="ltm-sushi" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_move_sushi_to_plate.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Pushes fragile sushi instead of grasping, learned from egg experience.</p>
+          </div>
+          <div class="item item-ltm-screw">
+            <video poster="" id="ltm-screw" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_move_screw_to_toolbox.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Immediately uses a towel to push the screw, learned from candy-pushing experience.</p>
+          </div>
+          <div class="item item-ltm-milk">
+            <video poster="" id="ltm-milk" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_pick_milk_carton.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Removes the apple on top before picking up the milk carton.</p>
+          </div>
+          <div class="item item-ltm-tennis">
+            <video poster="" id="ltm-tennis" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_pick_tennis_ball.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Clears the obstructing fan before grasping the tennis ball.</p>
+          </div>
+          <div class="item item-ltm-grapes">
+            <video poster="" id="ltm-grapes" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_move_grapes_to_banana.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Pushes grapes toward the banana instead of picking them up and placing them.</p>
+          </div>
+          <div class="item item-ltm-paper">
+            <video poster="" id="ltm-paper" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_move_paper_to_banana.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Uses a brush as a tool to push crumpled paper.</p>
+          </div>
+          <div class="item item-ltm-towel">
+            <video poster="" id="ltm-towel" autoplay controls muted loop playsinline height="100%">
+              <source src="./static/videos/ltm_pick_towel.mp4" type="video/mp4">
+            </video>
+            <p class="video-caption">Removes the orange on top before picking up the towel.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Approach ==================== -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Approach</h2>
+          <div class="content has-text-justified">
+            <p>
+              The proposed framework uses a VLM as both the task planner and success detector. When an action fails,
+              the robot reflects on the failure and adapts its plan using <strong>short-term memory
+                (STM)</strong>. Once the task is completed, the experience is summarized and stored in <strong>long-term
+                memory (LTM)</strong>. For future tasks, <strong>retrieval-augmented generation (RAG)</strong> retrieves
+              relevant past experiences to guide planning from the first attempt.
+            </p>
+          </div>
+          <img src="./static/images/pipeline.png" class="interpolation-image" alt="Pipeline overview." loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Results ==================== -->
+  <section class="section is-light">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Results</h2>
+
+      <!-- Key numbers -->
+      <div class="columns is-centered has-text-centered mb-5 result-highlight-row">
+        <div class="column is-one-third">
+          <div class="box result-highlight-box">
+            <p class="heading">STM Self-Reflection</p>
+            <p class="title is-4">35% &rarr; 84%</p>
+            <p class="has-text-grey">Task success rate with short-term memory</p>
+          </div>
+        </div>
+        <div class="column is-one-third">
+          <div class="box result-highlight-box">
+            <p class="heading">LTM + RAG</p>
+            <p class="title is-4">22% &rarr; 80%</p>
+            <p class="has-text-grey">Single-trial success rate on 12 scenarios</p>
+          </div>
+        </div>
+        <div class="column is-one-third">
+          <div class="box result-highlight-box">
+            <p class="heading">Generalization</p>
+            <p class="title is-4">8 / 8</p>
+            <p class="has-text-grey">Unseen tasks improved with learned experience</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STM Results Table -->
+      <div class="columns is-centered mt-6">
+        <div class="column is-10">
+          <h3 class="title is-4 has-text-centered">Effect of Short-Term Memory on Task Success</h3>
+          <div class="table-container">
+            <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+              <caption class="is-sr-only">Effect of short-term memory on task success rates comparing CaP-V and the proposed method</caption>
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th class="has-text-centered">CaP-V</th>
+                  <th class="has-text-centered">Ours</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Put apple on plate (container obstructs)</td>
+                  <td class="has-text-centered">43%</td>
+                  <td class="has-text-centered has-text-weight-bold">86%</td>
+                </tr>
+                <tr>
+                  <td>Move tiny candy (sponge/towel nearby)</td>
+                  <td class="has-text-centered">22%</td>
+                  <td class="has-text-centered has-text-weight-bold">67%</td>
+                </tr>
+                <tr>
+                  <td>Move egg (open view)</td>
+                  <td class="has-text-centered">40%</td>
+                  <td class="has-text-centered has-text-weight-bold">100%</td>
+                </tr>
+                <tr>
+                  <td>Pick up bowl (apple inside)</td>
+                  <td class="has-text-centered">33%</td>
+                  <td class="has-text-centered has-text-weight-bold">83%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey has-text-centered">Each task is tested 5&ndash;10 times with two attempts
+            allowed.</p>
+        </div>
+      </div>
+
+      <!-- LTM Results Table -->
+      <div class="columns is-centered mt-5">
+        <div class="column is-10">
+          <h3 class="title is-4 has-text-centered">Effect of Long-Term Memory on Single-Trial Success</h3>
+          <div class="table-container">
+            <table class="table is-bordered is-striped is-hoverable is-fullwidth">
+              <caption class="is-sr-only">Effect of long-term memory on single-trial success rates comparing COME and the proposed method</caption>
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th class="has-text-centered">COME</th>
+                  <th class="has-text-centered">Ours</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="ltm-seen-task">
+                  <td>Put apple on plate (container obstructs)</td>
+                  <td class="has-text-centered">29%</td>
+                  <td class="has-text-centered has-text-weight-bold">100%</td>
+                </tr>
+                <tr class="ltm-seen-task">
+                  <td>Move tiny candy (towel nearby)</td>
+                  <td class="has-text-centered">11%</td>
+                  <td class="has-text-centered has-text-weight-bold">78%</td>
+                </tr>
+                <tr class="ltm-seen-task">
+                  <td>Move egg (open view)</td>
+                  <td class="has-text-centered">20%</td>
+                  <td class="has-text-centered has-text-weight-bold">100%</td>
+                </tr>
+                <tr class="ltm-seen-task">
+                  <td>Pick up bowl (apple inside)</td>
+                  <td class="has-text-centered">17%</td>
+                  <td class="has-text-centered has-text-weight-bold">83%</td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="has-text-centered has-text-weight-semibold ltm-divider">
+                    Unseen tasks (generalization)
+                  </td>
+                </tr>
+                <tr>
+                  <td>Put tennis ball in box (mug obstructs)</td>
+                  <td class="has-text-centered">29%</td>
+                  <td class="has-text-centered has-text-weight-bold">71%</td>
+                </tr>
+                <tr>
+                  <td>Put orange/ball on plate (fan blocks)</td>
+                  <td class="has-text-centered">10%</td>
+                  <td class="has-text-centered has-text-weight-bold">80%</td>
+                </tr>
+                <tr>
+                  <td>Move crumpled paper (brush nearby)</td>
+                  <td class="has-text-centered">25%</td>
+                  <td class="has-text-centered has-text-weight-bold">63%</td>
+                </tr>
+                <tr>
+                  <td>Move screw (towel nearby)</td>
+                  <td class="has-text-centered">0%</td>
+                  <td class="has-text-centered has-text-weight-bold">86%</td>
+                </tr>
+                <tr>
+                  <td>Move sushi (open view)</td>
+                  <td class="has-text-centered">14%</td>
+                  <td class="has-text-centered has-text-weight-bold">71%</td>
+                </tr>
+                <tr>
+                  <td>Move grape/cherry (open view)</td>
+                  <td class="has-text-centered">20%</td>
+                  <td class="has-text-centered has-text-weight-bold">70%</td>
+                </tr>
+                <tr>
+                  <td>Pick up box (apple on top)</td>
+                  <td class="has-text-centered">43%</td>
+                  <td class="has-text-centered has-text-weight-bold">86%</td>
+                </tr>
+                <tr>
+                  <td>Pick up towel (orange on top)</td>
+                  <td class="has-text-centered">50%</td>
+                  <td class="has-text-centered has-text-weight-bold">75%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey has-text-centered">Each task is tested 5&ndash;10 times. Top 4 rows are
+            seen tasks; bottom 8 are unseen tasks demonstrating generalization.</p>
+        </div>
+      </div>
+
+
+      <div class="columns is-centered mt-5">
+        <div class="column is-10 has-text-centered">
+          <h3 class="title is-4 has-text-centered">Ablation Study of Memory Retrieval</h3>
+
+          <!-- Interactive charts (2x2 grid, responsive) -->
+          <div class="ablation-grid">
+            <div class="ablation-cell ablation-cell--radar">
+              <canvas id="radar-4o"></canvas>
+            </div>
+            <div class="ablation-cell ablation-cell--bar">
+              <canvas id="bar-tokens"></canvas>
+            </div>
+            <div class="ablation-cell ablation-cell--radar">
+              <canvas id="radar-mini"></canvas>
+            </div>
+            <div class="ablation-cell ablation-cell--bar">
+              <canvas id="bar-time"></canvas>
+            </div>
+          </div>
+
+          <p class="has-text-grey has-text-centered mt-3">
+            RAG with <code>gpt-4o</code> achieves the highest first-action accuracy, outperforming both full LTM and
+            random retrieval. <code>gpt-4o-mini</code> also benefits from relevant memories, though gains are less
+            pronounced. Feeding the full LTM increases prompt length by 7.5&times; at substantially higher cost.
+          </p>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- ==================== Comparison Table ==================== -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <h2 class="title is-3 has-text-centered">Comparison with Prior Methods</h2>
+          <div class="table-container">
+            <table class="table is-bordered is-hoverable is-fullwidth comparison-table">
+              <caption class="is-sr-only">Feature comparison of the proposed method with prior robot task planning methods</caption>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th class="has-text-centered rotate-header"><span>Self-reflection</span></th>
+                  <th class="has-text-centered rotate-header"><span>Learning by exp.</span></th>
+                  <th class="has-text-centered rotate-header"><span>Interactive replan</span></th>
+                  <th class="has-text-centered rotate-header"><span>Creative tool use</span></th>
+                  <th class="has-text-centered rotate-header"><span>Short-term memory</span></th>
+                  <th class="has-text-centered rotate-header"><span>Long-term memory</span></th>
+                  <th class="has-text-centered rotate-header"><span>Unified feedback</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>CaP</td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>SayCan</td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>Inner Monologue</td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>RoboTool</td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>DROC</td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>REFLECT</td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr>
+                  <td>COME</td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                </tr>
+                <tr>
+                  <td>ReplanVLM</td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                </tr>
+                <tr>
+                  <td>BUMBLE</td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="xmark">&times;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="dash">&#9675;</span></td>
+                </tr>
+                <tr class="ours-row">
+                  <td><strong>Ours</strong></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="checkmark">&#10003;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                  <td class="has-text-centered"><span class="cmark">&#9679;</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey has-text-centered">
+            Capabilities are shown with &#10003;/&times;. Components are shown with &#9679; (present) / &#9675;
+            (absent). The proposed method is the only method achieving all listed capabilities.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VLM Log Examples ==================== -->
+  <section class="section">
+    <div class="container is-widescreen">
+      <h2 class="title is-3 has-text-centered">VLM Conversation Examples</h2>
+      <p class="has-text-centered mb-5">
+        Detailed VLM planning and self-reflection logs for representative tasks.
+      </p>
+
+      <!-- Tab navigation -->
+      <div class="tabs is-centered is-boxed is-medium" id="example-tabs">
+        <ul>
+          <li class="is-active" data-tab="stm-tab">
+            <a><span class="icon is-small"><i class="fas fa-brain"></i></span><span>STM: &ldquo;Put the apple on the
+                plate&rdquo;</span></a>
+          </li>
+          <li data-tab="ltm-tab">
+            <a><span class="icon is-small"><i class="fas fa-database"></i></span><span>LTM: &ldquo;Put the orange on
+                the plate&rdquo;</span></a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tab content -->
+      <div id="stm-tab" class="tab-content is-active">
+        <iframe src="stm.html" class="box example-iframe" style="width:100%; height:600px; border:none;"></iframe>
+      </div>
+      <div id="ltm-tab" class="tab-content" style="display:none;">
+        <iframe src="ltm.html" class="box example-iframe" style="width:100%; height:600px; border:none;"></iframe>
+      </div>
+    </div>
+  </section>
+
+</body>
+
+</html>
